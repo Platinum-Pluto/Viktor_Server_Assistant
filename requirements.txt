@@ -1,0 +1,6 @@
+tqdm
+pyaudio
+ollama
+gradio_client
+IPython
+ffmpeg-python

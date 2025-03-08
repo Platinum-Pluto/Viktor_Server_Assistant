@@ -1,4 +1,5 @@
 import os
+from dotenv import load_dotenv
 import cmd 
 import subprocess
 from tqdm import tqdm
@@ -10,10 +11,21 @@ import time
 import platform
 import functools
 import re
+#from pirateking import pirateKing, pirate
+import threading, time, sys
+from pirateking import pirate
+from tts import tts
+import sys
+
+load_dotenv()
 
 history = []
 
-def print_slow(text, delay=0.05, sound_file="blip2.wav"):
+
+CHAR_SFX = os.getenv('CHAR_SFX')
+
+
+def print_slow(text, delay=0.01, sound_file= CHAR_SFX):
     words = text.split()
     p = pyaudio.PyAudio()
     wf = wave.open(sound_file, 'rb')
@@ -75,6 +87,15 @@ def run_command_with_progress(command, description):
         pbar.update(100 - pbar.n)  
 
 
+def spinner(done_event):
+    while not done_event.is_set():
+        for cursor in '|/-\\':
+            if done_event.is_set():
+                break
+            sys.stdout.write(cursor)
+            sys.stdout.flush()
+            time.sleep(0.1)
+            sys.stdout.write('\b')
 
 
 
@@ -122,7 +143,12 @@ class MyTerminal(cmd.Cmd):
                 for i, element in enumerate(history):
                     file.write(f"{i + 1}: {element}\n")
 
+    def do_clear(self, line):
+        history.clear()
+        print_slow("History has been cleared")
 
+
+        
     def default(self, line):
         try:
             output = subprocess.check_output(line, shell=True)
@@ -196,13 +222,47 @@ class MyTerminal(cmd.Cmd):
         print_slow(status.stdout)
 
         return None
-    
+    #Get-Process ollama* | Stop-Process -Force | ollama serve
+    def do_talk(self, line):
+        history.append(f'say {line}')
+        done_event = threading.Event()
+        spinner_thread = threading.Thread(target=spinner, args=(done_event,))
+        spinner_thread.start()
 
+        res = pirate(generation_text = line, model = 'huihui_ai/deepseek-r1-abliterated:7b')
+        
+        done_event.set()
+        spinner_thread.join()
+
+        print_slow(res)
+        tts(res)
+
+
+"""    @restrict_os(["Linux", "Darwin"])  # Allow only on Linux and macOS
     def do_speak(self, line):
-        return None
+        done_event = threading.Event()
+        spinner_thread = threading.Thread(target=spinner, args=(done_event,))
+        spinner_thread.start()
+
+        res = pirateKing(reference_audio_path = "rupert.mp3", reference_text = "", custom_config = None, generation_text = line, model = 'huihui_ai/deepseek-r1-abliterated:8b')
+        
+        done_event.set()
+        spinner_thread.join()
+
+        print_slow(res)
     
     def do_talk(self, line):
-        return None
+        done_event = threading.Event()
+        spinner_thread = threading.Thread(target=spinner, args=(done_event,))
+        spinner_thread.start()
+
+        res = pirateKing(generation_text = line, model = 'huihui_ai/deepseek-r1-abliterated:8b')
+        
+        done_event.set()
+        spinner_thread.join()
+
+        print_slow(res)"""
+  
 
 
 if __name__ == '__main__':
