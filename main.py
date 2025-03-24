@@ -269,10 +269,9 @@ class MyTerminal(cmd.Cmd):
 
     
 if __name__ == '__main__':
-
     welcome = """
     𝙿𝚛𝚘𝚓𝚎𝚌𝚝 𝚅𝙸𝙺𝚃𝙾𝚁
-   """
+    """
     print(welcome)
     MyTerminal().cmdloop()
 
