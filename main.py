@@ -231,7 +231,7 @@ class MyTerminal(cmd.Cmd):
         spinner_thread = threading.Thread(target=spinner, args=(done_event,))
         spinner_thread.start()
 
-        res = pirate(generation_text = line, model = 'huihui_ai/deepseek-r1-abliterated:7b')
+        res = pirate(line,'huihui_ai/deepseek-r1-abliterated:7b')
         
         done_event.set()
         spinner_thread.join()
