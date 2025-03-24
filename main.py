@@ -16,6 +16,8 @@ import threading, time, sys
 from pirateking import pirate
 from tts import tts
 import sys
+import re
+
 
 load_dotenv()
 
@@ -265,6 +267,7 @@ class MyTerminal(cmd.Cmd):
   
 
 
+    
 if __name__ == '__main__':
 
     welcome = """
