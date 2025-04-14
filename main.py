@@ -17,14 +17,21 @@ from pirateking import pirate
 from tts import tts
 import sys
 import re
+import random
+from twin_persona import generate_instruction, generate_serena_instruction
+from peer import alright
+
 
 
 load_dotenv()
 
 history = []
 
-
+tts_path = os.getenv('TTS_PATH')
 CHAR_SFX = os.getenv('CHAR_SFX')
+bel_path = os.getenv('BEL_PATH')
+ser_path = os.getenv('SER_PATH')
+
 
 
 def print_slow(text, delay=0.01, sound_file= CHAR_SFX):
@@ -237,7 +244,57 @@ class MyTerminal(cmd.Cmd):
         spinner_thread.join()
 
         print_slow(res)
-        tts(res)
+        tts(res, tts_path)
+
+    def do_alienX(self, line):
+        history.append(f'say {line}')
+        message = f"{line} summarize this scenario within 15 words"
+        #scenario = alright(message,'huihui_ai/deepseek-r1-abliterated:7b')
+        scenario = line
+        #print(f"SCENARIO: {scenario}")
+        serena = ""
+        bel = ""
+        val = random.choice([True, False])
+        if val is True:
+            done_event = threading.Event()
+            spinner_thread = threading.Thread(target=spinner, args=(done_event,))
+            spinner_thread.start()
+            mes = generate_instruction(scenario, serena, line)
+            bel = alright(mes,'huihui_ai/deepseek-r1-abliterated:7b')
+            #print(f"BELLICUS: {bel}")
+            tts(bel, bel_path)
+            done_event.set()
+            spinner_thread.join()
+            mes = generate_serena_instruction(scenario, bel, line)
+            done_event = threading.Event()
+            spinner_thread = threading.Thread(target=spinner, args=(done_event,))
+            spinner_thread.start()
+            ser = alright(mes,'huihui_ai/deepseek-r1-abliterated:7b')
+            #print(f"SERENA: {ser}")
+            tts(ser, ser_path)
+            done_event.set()
+            spinner_thread.join()
+        else:
+            done_event = threading.Event()
+            spinner_thread = threading.Thread(target=spinner, args=(done_event,))
+            spinner_thread.start()
+            mes = generate_serena_instruction(scenario, bel, line)
+            serena = alright(mes,'huihui_ai/deepseek-r1-abliterated:7b')
+            #print(f"SERENA: {serena}")
+            tts(serena, ser_path)
+            done_event.set()
+            spinner_thread.join()
+            mes = generate_instruction(scenario, serena, line)
+            done_event = threading.Event()
+            spinner_thread = threading.Thread(target=spinner, args=(done_event,))
+            spinner_thread.start()
+            bel = alright(mes,'huihui_ai/deepseek-r1-abliterated:7b')
+            #print(f"BELLICUS: {bel}")
+            tts(bel, bel_path)
+            done_event.set()
+            spinner_thread.join()
+
+
 
 
 """    @restrict_os(["Linux", "Darwin"])  # Allow only on Linux and macOS

@@ -5,8 +5,6 @@ from gradio_client import Client
 from functools import wraps
 
 
-INSTRUCTION = "you are the most insane guy ever and you use a lot of curse words such as FUCK, SHIT, and etc you know, in your replies. At the end of your replies always say an Insane fact about yourself"
-
 def check_ollama_status(if_running, if_not_running):
     def decorator(func):
         @wraps(func)
@@ -39,7 +37,7 @@ def on_server_running(*args, **kwargs):
 
 def on_server_not_running(*args):
     print("Ollama server is not running.")
-    message = f'{args[0]} + {INSTRUCTION}'
+    message = args[0]
     client = Client("tencent/Hunyuan-T1")
     result = client.predict(message=message, api_name="/chat")
     res = re.sub(r'> \*\*Start thinking\*\*.*?> \*\*End thinking\*\*\n', '', result, flags=re.DOTALL)
@@ -47,7 +45,7 @@ def on_server_not_running(*args):
 
 
 @check_ollama_status(if_running=on_server_running, if_not_running=on_server_not_running)
-def pirate(*args):
+def alright(*args):
     #print("Performing action with arguments:", args)
     print("")
 
